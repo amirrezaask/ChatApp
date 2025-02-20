@@ -1,12 +1,20 @@
 using ChatApp.Application;
 using ChatApp.Application.Endpoints.Users;
+using ChatApp.Application.Entities;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
 
-builder.Services.AddDbContext<ChatDbContext>();
+builder.Services.AddDbContext<ChatDbContext>(options => 
+{
+    if (builder.Configuration.GetSection("Database")["Type"] == "Sqlite")
+        options.UseSqlite("Data Source=Chat.db");
+    else if (builder.Configuration.GetSection("Database")["Type"] == "InMemory")
+        options.UseInMemoryDatabase("Chat");
+});
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
@@ -42,3 +50,14 @@ app.MapRazorComponents<ChatApp.Application.Components.App>()
 app.MapDefaultEndpoints();
 
 app.Run();
+
+
+
+
+
+public class ChatDbContext(DbContextOptions<ChatDbContext> options) : DbContext(options)
+{
+    public DbSet<User> Users { get; set; }
+    public DbSet<Message> Messages { get; set; }
+
+}

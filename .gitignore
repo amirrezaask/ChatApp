@@ -9,7 +9,8 @@ Chat.dat
 *.user
 *.userosscache
 *.sln.docstates
-
+.idea
+Chat.db
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
