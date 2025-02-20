@@ -1,7 +1,12 @@
+using ChatApp.Application;
+using ChatApp.Application.Endpoints.Users;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
+
+builder.Services.AddDbContext<ChatDbContext>();
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
@@ -21,6 +26,10 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.MapGroup("/api")
+   .MapUserEndpoints();
+
 
 app.MapStaticAssets();
 
