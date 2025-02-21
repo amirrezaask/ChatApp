@@ -1,12 +1,14 @@
 using ChatApp.Application;
 using ChatApp.Application.Endpoints.Users;
 using ChatApp.Application.Entities;
+using ChatApp.Application.Hubs;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
+builder.Services.AddSignalR();
 
 builder.Services.AddDbContext<ChatDbContext>(options => 
 {
@@ -35,8 +37,15 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+
+//Apis
 app.MapGroup("/api")
    .MapUserEndpoints();
+
+
+
+
+app.MapHub<ChatHub>("/chathub");
 
 
 app.MapStaticAssets();
