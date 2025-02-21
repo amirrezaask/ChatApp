@@ -1,7 +1,11 @@
+using Blazorise;
 using ChatApp.Application.Endpoints.Users;
 using ChatApp.Application.Entities;
 using ChatApp.Application.Hubs;
 using Microsoft.EntityFrameworkCore;
+using Blazorise;
+using Blazorise.Bootstrap5;
+using Blazorise.Icons.FontAwesome;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +13,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
 builder.Services.AddSignalR();
+
+
+builder.Services
+    .AddBlazorise(options =>
+    {
+        options.Immediate = true;
+    })
+    .AddBootstrap5Providers()
+    .AddFontAwesomeIcons();
 
 builder.Services.AddDbContext<ChatDbContext>(options => 
 {

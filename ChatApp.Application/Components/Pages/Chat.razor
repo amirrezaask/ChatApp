@@ -1,19 +1,30 @@
 @page "/"
 @rendermode InteractiveServer
 @using Microsoft.AspNetCore.SignalR.Client
+@using Blazorise;
 @inject NavigationManager Navigation
 @implements IAsyncDisposable
 
 <PageTitle>Chat</PageTitle>
 
 <h1>Chat</h1>
+<Modal @ref="userHandleInputRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Handle</ModalTitle>
+        </ModalHeader>
+        <ModalBody>
+            <Field>
+                <FieldLabel>your Handle</FieldLabel>
+                <TextEdit @bind-Text="@handle" Placeholder="Enter your chat handle..." />
+            </Field>
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Primary" Clicked="@SaveUserHandle">Start</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
 
-<div class="form-group">
-    <label>
-        User:
-        <input @bind="userInput" />
-    </label>
-</div>
 <div class="form-group">
     <label>
         Message:
@@ -32,10 +43,21 @@
 </ul>
 
 @code {
+    private Modal userHandleInputRef;
     private HubConnection? hubConnection;
     private List<string> messages = [];
-    private string? userInput;
+    private string? handle;
     private string? messageInput;
+
+    private Task ShowModal() 
+    {
+        return userHandleInputRef.Show();
+    }
+
+    private Task SaveUserHandle()
+    {
+        return userHandleInputRef.Hide();
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -51,13 +73,16 @@
         });
 
         await hubConnection.StartAsync();
+
+        await userHandleInputRef.Show();
+
     }
 
     private async Task Send()
     {
         if (hubConnection is not null)
         {
-            await hubConnection.SendAsync("SendMessage", userInput, messageInput);
+            await hubConnection.SendAsync("SendMessage", handle, messageInput);
         }
     }
 
