@@ -38,7 +38,16 @@
 <ul id="messagesList">
     @foreach (var message in messages)
     {
-        <li>@message</li>
+        <Card>
+            <CardBody>
+                <CardTitle Size="3">
+                    @message.Split(":")[0]
+                </CardTitle>
+                <CardText>
+                    @message.Split(":")[1]
+                </CardText>
+            </CardBody>
+        </Card>
     }
 </ul>
 
@@ -49,7 +58,7 @@
     private string? handle;
     private string? messageInput;
 
-    private Task ShowModal() 
+    private Task ShowModal()
     {
         return userHandleInputRef.Show();
     }
@@ -62,8 +71,8 @@
     protected override async Task OnInitializedAsync()
     {
         hubConnection = new HubConnectionBuilder()
-            .WithUrl(Navigation.ToAbsoluteUri("/chathub"))
-            .Build();
+        .WithUrl(Navigation.ToAbsoluteUri("/chathub"))
+        .Build();
 
         hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
         {
@@ -87,7 +96,7 @@
     }
 
     public bool IsConnected =>
-        hubConnection?.State == HubConnectionState.Connected;
+    hubConnection?.State == HubConnectionState.Connected;
 
     public async ValueTask DisposeAsync()
     {
