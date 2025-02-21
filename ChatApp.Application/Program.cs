@@ -1,8 +1,8 @@
-using ChatApp.Application;
 using ChatApp.Application.Endpoints.Users;
 using ChatApp.Application.Entities;
 using ChatApp.Application.Hubs;
 using Microsoft.EntityFrameworkCore;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,35 +29,15 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline (middlewares).
 app.UseExceptionHandler();
-
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
-
-
-//Apis
-app.MapGroup("/api")
-   .MapUserEndpoints();
-
-
-
-
-app.MapHub<ChatHub>("/chathub");
-
-
+app.MapOpenApi(); // SwaggerUI
+app.MapGroup("/api").MapUserEndpoints(); //APIs
+app.MapHub<ChatHub>("/chathub"); //SignalR
 app.MapStaticAssets();
-
 app.UseAntiforgery();
-
-app.MapRazorComponents<ChatApp.Application.Components.App>()
-    .AddInteractiveServerRenderMode();
-
-
-app.MapDefaultEndpoints();
-
+app.MapRazorComponents<ChatApp.Application.Components.App>().AddInteractiveServerRenderMode();
+app.MapInfraDefaultEndpoints();
 app.Run();
 
 
