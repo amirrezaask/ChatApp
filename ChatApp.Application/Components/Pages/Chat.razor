@@ -17,27 +17,19 @@
         <ul id="messagesList">
             @foreach (var message in messages)
             {
-                <Card>
-                    <CardBody>
-                        <CardTitle Size="3">
-                            @message.SenderHandle
-                        </CardTitle>
-                        <CardText>
-                            @message.Content
-                        </CardText>
-                    </CardBody>
-                </Card>
+                <ListGroup>
+                    <ListGroupItem Color="@getMessageColor(message)">@($"{message.SenderHandle}: {message.Content}")</ListGroupItem>
+                </ListGroup>
             }
         </ul>
     </LayoutContent>
     <LayoutFooter>
-        <div class="form-group">
-            <Field @bind-Text="messageInput" Horizontal=true Disabled="@(!IsConnected)">Type your message</Field>
+        <div class="form-group" style="text-align: center;">
+            <Field @bind-Text="messageInput" Disabled="@(!IsConnected)">Type your message</Field>
             <input @bind="messageInput" size="50" />
             <Button Color="Color.Primary" disabled="@(!IsConnected)" Clicked="@NewMessage">Send</Button>
-
         </div>
-        
+
         <Divider />
 
     </LayoutFooter>
@@ -89,6 +81,7 @@
     private string? handle;
     private string? messageInput;
 
+    private Blazorise.Color getMessageColor(Message message) => message.SenderHandle == handle ? Blazorise.Color.Primary : Blazorise.Color.Default;
     private Task ShowModal()
     {
         return userHandleInputRef.Show();
