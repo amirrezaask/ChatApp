@@ -2,10 +2,8 @@ using Blazorise;
 using ChatApp.Application.Endpoints.Users;
 using ChatApp.Application.Entities;
 using Microsoft.EntityFrameworkCore;
-using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
-using Microsoft.AspNetCore.SignalR;
 using ChatApp.Application.Hubs;
 
 

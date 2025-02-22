@@ -9,7 +9,41 @@
 
 <PageTitle>Chat</PageTitle>
 
-<h1>Chat</h1>
+<Layout>
+    <LayoutHeader>
+        <Divider />
+    </LayoutHeader>
+    <LayoutContent>
+        <ul id="messagesList">
+            @foreach (var message in messages)
+            {
+                <Card>
+                    <CardBody>
+                        <CardTitle Size="3">
+                            @message.SenderHandle
+                        </CardTitle>
+                        <CardText>
+                            @message.Content
+                        </CardText>
+                    </CardBody>
+                </Card>
+            }
+        </ul>
+    </LayoutContent>
+    <LayoutFooter>
+        <div class="form-group">
+            <Field @bind-Text="messageInput" Horizontal=true Disabled="@(!IsConnected)">Type your message</Field>
+            <input @bind="messageInput" size="50" />
+            <Button Color="Color.Primary" disabled="@(!IsConnected)" Clicked="@NewMessage">Send</Button>
+
+        </div>
+        
+        <Divider />
+
+    </LayoutFooter>
+</Layout>
+
+
 <Modal @ref="userHandleInputRef">
     <ModalContent Centered>
         <ModalHeader>
@@ -43,27 +77,8 @@
 
 <hr>
 
-<ul id="messagesList">
-    @foreach (var message in messages)
-    {
-        <Card>
-            <CardBody>
-                <CardTitle Size="3">
-                    @message.SenderHandle
-                </CardTitle>
-                <CardText>
-                    @message.Content
-                </CardText>
-            </CardBody>
-        </Card>
-    }
-</ul>
 
-<div class="form-group">
-    <Field @bind-Text="messageInput">Message:</Field>
-    <input @bind="messageInput" size="50" />
-</div>
-<button @onclick="NewMessage" disabled="@(!IsConnected)">Send</button>
+
 
 
 @code {
