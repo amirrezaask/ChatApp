@@ -2,5 +2,8 @@
 Simple chat application using Asp.NET SignalR and Blazor on frontend.
 
 
-![ChatApp Preview](./assets/chatapp_preview.png)
-![ChatApp Features](./.assets/chatapp_features.png)
+![ChatApp Preview](./assets/join.png)
+![ChatApp Features](./.assets/messages.png)
+
+<!-- ![ChatApp Join](https://raw.githubusercontent.com/amirrezaask/ChatApp/main/.assets/join.png)
+![ChatApp Features](https://raw.githubusercontent.com/amirrezaask/ChatApp/main/.assets/join.png) -->
