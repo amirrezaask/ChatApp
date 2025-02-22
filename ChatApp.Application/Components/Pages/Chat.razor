@@ -2,6 +2,8 @@
 @rendermode InteractiveServer
 @using Microsoft.AspNetCore.SignalR.Client
 @using Blazorise;
+@using ChatApp.Application.Entities;
+@using static ChatApp.Application.Hubs.Protocol;
 @inject NavigationManager Navigation
 @implements IAsyncDisposable
 
@@ -20,18 +22,24 @@
             </Field>
         </ModalBody>
         <ModalFooter>
-            <Button Color="Color.Primary" Clicked="@SaveUserHandle">Start</Button>
+            <Button Color="Color.Primary" Clicked="@Join">Join</Button>
         </ModalFooter>
     </ModalContent>
 </Modal>
 
-<div class="form-group">
-    <label>
-        Message:
-        <input @bind="messageInput" size="50" />
-    </label>
-</div>
-<button @onclick="Send" disabled="@(!IsConnected)">Send</button>
+<Modal @ref="errorModalRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Error</ModalTitle>
+        </ModalHeader>
+        <ModalBody>
+            <Text>There was an error connecting to the chat server.</Text>
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Primary" Clicked="@Join">Join</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
 
 <hr>
 
@@ -41,20 +49,28 @@
         <Card>
             <CardBody>
                 <CardTitle Size="3">
-                    @message.Split(":")[0]
+                    @message.SenderHandle
                 </CardTitle>
                 <CardText>
-                    @message.Split(":")[1]
+                    @message.Content
                 </CardText>
             </CardBody>
         </Card>
     }
 </ul>
 
+<div class="form-group">
+    <Field @bind-Text="messageInput">Message:</Field>
+    <input @bind="messageInput" size="50" />
+</div>
+<button @onclick="NewMessage" disabled="@(!IsConnected)">Send</button>
+
+
 @code {
+    private Modal errorModalRef;
     private Modal userHandleInputRef;
     private HubConnection? hubConnection;
-    private List<string> messages = [];
+    private List<Message> messages = [];
     private string? handle;
     private string? messageInput;
 
@@ -63,9 +79,10 @@
         return userHandleInputRef.Show();
     }
 
-    private Task SaveUserHandle()
+    private async Task Join()
     {
-        return userHandleInputRef.Hide();
+        await hubConnection.SendAsync(MessageTypes.Join.ToString(), handle);
+        await userHandleInputRef.Hide();
     }
 
     protected override async Task OnInitializedAsync()
@@ -74,11 +91,17 @@
         .WithUrl(Navigation.ToAbsoluteUri("/chathub"))
         .Build();
 
-        hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+
+        hubConnection.On<Message>(MessageTypes.NewMessage.ToString(), async (message) =>
         {
-            var encodedMsg = $"{user}: {message}";
-            messages.Add(encodedMsg);
-            InvokeAsync(StateHasChanged);
+            messages.Add(message);
+            await InvokeAsync(StateHasChanged);
+        });
+
+        hubConnection.On<UserInfo>(MessageTypes.UserInfo.ToString(), async (userInfo) =>
+        {
+            messages = userInfo.Messages.ToList();
+            await InvokeAsync(StateHasChanged);
         });
 
         await hubConnection.StartAsync();
@@ -87,12 +110,19 @@
 
     }
 
-    private async Task Send()
+    private async Task ShowErrorModal()
     {
-        if (hubConnection is not null)
+        await errorModalRef.Show();
+    }
+
+    private async Task NewMessage()
+    {
+        if (hubConnection is null) await ShowErrorModal();
+
+        await hubConnection!.SendAsync(MessageTypes.NewMessage.ToString(), new Message
         {
-            await hubConnection.SendAsync("SendMessage", handle, messageInput);
-        }
+            Content = messageInput,
+        });
     }
 
     public bool IsConnected =>
@@ -100,9 +130,8 @@
 
     public async ValueTask DisposeAsync()
     {
-        if (hubConnection is not null)
-        {
-            await hubConnection.DisposeAsync();
-        }
+        if (hubConnection is null) return;
+        await hubConnection.SendAsync(MessageTypes.Offline.ToString());
+        await hubConnection.DisposeAsync();
     }
 }
