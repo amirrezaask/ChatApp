@@ -73,7 +73,7 @@ public class ChatHub(ChatDbContext _dbContext) : Hub
             throw new Exception($"User not found for connection {Context.ConnectionId}");
 
         if (userId != message.SenderId)
-            throw new Exception("Unauthorized");
+            throw new Exception($"Unauthorized, userId: {userId}, message.SenderId:{message.SenderId}");
 
         var sender = await _dbContext.Users.Where(u => u.Id == userId).FirstOrDefaultAsync();
         if (sender is null) throw new Exception($"No user found with id {userId}");

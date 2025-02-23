@@ -108,6 +108,7 @@
         hubConnection.On<UserInfo>(MessageTypes.UserInfo.ToString(), async (userInfo) =>
         {
             messages = userInfo.Messages.ToList();
+            userId = userInfo.UserId;
             await InvokeAsync(StateHasChanged);
         });
 
