@@ -17,11 +17,10 @@ public static class Protocol
     }
 
 
-
     public class UserInfo
     {
         public int UserId { get; set; }
-        public IEnumerable<MessageDTO> Messages { get; set; }
+        public List<Conversation> Conversation { get; set; }
     }
 
     public class MessageDTO
@@ -57,14 +56,11 @@ public class ChatHub(ChatDbContext _dbContext) : Hub
 
         connectionsToUserIds[Context.ConnectionId] = user.Id;
 
-        var messages = _dbContext.Messages
-            .Select(m => new Protocol.MessageDTO
-            {
-                SenderId = m.SenderId,
-                ReceiverId = m.Conversation.User1Id == m.SenderId ? m.Conversation.User2Id : m.Conversation.User1Id,
-                Text = m.Text
-            }).ToList();
-        await Clients.Caller.SendAsync(Protocol.MessageTypes.UserInfo.ToString(), new Protocol.UserInfo { UserId = user.Id, Messages = messages });
+
+
+        var conversations = await _dbContext.Conversations.Where(c => c.User2Id == user.Id || c.User1Id==user.Id).ToListAsync();
+
+        await Clients.Caller.SendAsync(Protocol.MessageTypes.UserInfo.ToString(), new Protocol.UserInfo { UserId = user.Id, Conversation = conversations });
     }
     public async Task NewMessage(Protocol.MessageDTO message)
     {

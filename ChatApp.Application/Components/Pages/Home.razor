@@ -9,10 +9,10 @@
 
 <PageTitle>Chat</PageTitle>
 
-<Layout>
-    <LayoutHeader>
-        <Divider />
-    </LayoutHeader>
+<Layout Sider>
+    <LayoutSider>
+        Salam
+    </LayoutSider>
     <LayoutContent>
         <ul id="messagesList">
             @foreach (var message in messages)
@@ -73,7 +73,7 @@
     private Modal errorModalRef;
     private Modal userHandleInputRef;
     private HubConnection? hubConnection;
-    private List<MessageDTO> messages = [];
+    private List<Conversation> conversations = [];
     private string? userHandle;
     private int userId;
 
@@ -101,7 +101,11 @@
 
         hubConnection.On<MessageDTO>(MessageTypes.NewMessage.ToString(), async (message) =>
         {
-            messages.Add(message);
+            var user1Id = message.SenderId > message.ReceiverId ? message.ReceiverId : message.SenderId;
+            var user2Id = message.SenderId > message.ReceiverId ? message.SenderId : message.ReceiverId;
+            var conversation = conversations.Where(c => c.User1Id == user1Id && c.User2Id == user2Id).First();
+            conversation.Messages.Add(message);
+
             await InvokeAsync(StateHasChanged);
         });
 
