@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
 using ChatApp.Application.Hubs;
+using ChatApp.Application.Hubs.MonitoringHub;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,8 +46,12 @@ var app = builder.Build();
 app.UseExceptionHandler();
 app.MapOpenApi(); // SwaggerUI
 app.MapGroup("/api").MapUserEndpoints(); //APIs
-app.
-    MapHub<ChatHub>("/chathub"); //SignalR
+
+//SignalR
+app.MapHub<ChatHub>("/chathub");
+app.MapHub<MonitoringHub>("/monitoringhub");
+
+
 app.MapStaticAssets();
 app.UseAntiforgery();
 app.MapRazorComponents<ChatApp.Application.Components.App>().AddInteractiveServerRenderMode();
