@@ -1,0 +1,10 @@
+@page "/monitoring"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.SignalR.Client
+@using Blazorise;
+@using ChatApp.Application.Entities;
+@using static ChatApp.Application.Hubs.Protocol;
+@inject NavigationManager Navigation
+@implements IAsyncDisposable
+
+<PageTitle>Chat</PageTitle>

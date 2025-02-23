@@ -44,17 +44,18 @@ public class ChatHub(ChatDbContext _dbContext) : Hub
     public async Task Join(string handle)
     {
 
-        var userId = await _dbContext.Users.Where(u => u.Handle == handle).Select(u => u.Id).FirstOrDefaultAsync();
-        if (userId == 0)
+        var user = await _dbContext.Users.Where(u => u.Handle == handle).FirstOrDefaultAsync();
+        if (user is null)
         {
-            var user = new User { Handle = handle };
+            user = new User { Handle = handle, Status= User.Statuses.Online };
             _dbContext.Users.Add(user);
             await _dbContext.SaveChangesAsync();
-
-            userId = user.Id;
         }
 
-        connectionsToUserIds[Context.ConnectionId] = userId;
+        user.Status = User.Statuses.Online;
+        await _dbContext.SaveChangesAsync();
+
+        connectionsToUserIds[Context.ConnectionId] = user.Id;
 
         var messages = _dbContext.Messages
             .Select(m => new Protocol.MessageDTO
@@ -63,7 +64,7 @@ public class ChatHub(ChatDbContext _dbContext) : Hub
                 ReceiverId = m.Conversation.User1Id == m.SenderId ? m.Conversation.User2Id : m.Conversation.User1Id,
                 Text = m.Text
             }).ToList();
-        await Clients.Caller.SendAsync(Protocol.MessageTypes.UserInfo.ToString(), new Protocol.UserInfo { UserId = userId, Messages = messages });
+        await Clients.Caller.SendAsync(Protocol.MessageTypes.UserInfo.ToString(), new Protocol.UserInfo { UserId = user.Id, Messages = messages });
     }
     public async Task NewMessage(Protocol.MessageDTO message)
     {

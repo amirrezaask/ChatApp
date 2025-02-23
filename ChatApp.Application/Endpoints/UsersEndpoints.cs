@@ -19,7 +19,7 @@ static class UsersEndpoints
 
     public static async Task<List<User>> ListOnlineUsers(ChatDbContext _context) 
     {
-        return await _context.Users.Where(u => u._Status == User.Status.Online).ToListAsync();
+        return await _context.Users.Where(u => u.Status == User.Statuses.Online).ToListAsync();
     }
 
 }

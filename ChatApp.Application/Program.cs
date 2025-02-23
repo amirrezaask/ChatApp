@@ -45,7 +45,8 @@ var app = builder.Build();
 app.UseExceptionHandler();
 app.MapOpenApi(); // SwaggerUI
 app.MapGroup("/api").MapUserEndpoints(); //APIs
-app.MapHub<ChatHub>("/chathub"); //SignalR
+app.
+    MapHub<ChatHub>("/chathub"); //SignalR
 app.MapStaticAssets();
 app.UseAntiforgery();
 app.MapRazorComponents<ChatApp.Application.Components.App>().AddInteractiveServerRenderMode();
