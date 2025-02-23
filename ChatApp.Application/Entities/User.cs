@@ -2,12 +2,12 @@
 public class User
 {
 
-    public enum Status
+    public enum Statuses
     {
         Online,
         Offline
     }
     public int Id { get; set; }
     public string Handle { get; set; }    
-    public Status _Status { get; set; }
+    public Statuses Status { get; set; }
 }

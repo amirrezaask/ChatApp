@@ -9,23 +9,25 @@
 
 <PageTitle>Chat</PageTitle>
 
-<Layout>
-    <LayoutHeader>
-        <Divider />
-    </LayoutHeader>
+<Layout Sider>
+    <LayoutSider>
+        Salam
+    </LayoutSider>
     <LayoutContent>
         <ul id="messagesList">
             @foreach (var message in messages)
             {
                 <ListGroup>
-                    <ListGroupItem Color="@getMessageColor(message)">@($"{message.SenderHandle}: {message.Content}")</ListGroupItem>
+                    <ListGroupItem Color="@getMessageColor(message)">@($"{message.SenderHandle}: {message.Text}")</ListGroupItem>
                 </ListGroup>
             }
         </ul>
     </LayoutContent>
     <LayoutFooter>
         <div class="form-group" style="text-align: center;">
-            <Field @bind-Text="messageInput" Disabled="@(!IsConnected)">Type your message</Field>
+            <Field Disabled="@(!IsConnected)">Reciever</Field>
+            <input @bind="receiverHandle" size="50" />
+            <Field Disabled="@(!IsConnected)">Type your message</Field>
             <input @bind="messageInput" size="50" />
             <Button Color="Color.Primary" disabled="@(!IsConnected)" Clicked="@NewMessage">Send</Button>
         </div>
@@ -44,7 +46,7 @@
         <ModalBody>
             <Field>
                 <FieldLabel>your Handle</FieldLabel>
-                <TextEdit @bind-Text="@handle" Placeholder="Enter your chat handle..." />
+                <TextEdit @bind-Text="@userHandle" Placeholder="Enter your chat handle..." />
             </Field>
         </ModalBody>
         <ModalFooter>
@@ -67,21 +69,18 @@
     </ModalContent>
 </Modal>
 
-<hr>
-
-
-
-
-
 @code {
     private Modal errorModalRef;
     private Modal userHandleInputRef;
     private HubConnection? hubConnection;
-    private List<Message> messages = [];
-    private string? handle;
+    private List<Conversation> conversations = [];
+    private string? userHandle;
+    private int userId;
+
+    private string? receiverHandle;
     private string? messageInput;
 
-    private Blazorise.Color getMessageColor(Message message) => message.SenderHandle == handle ? Blazorise.Color.Primary : Blazorise.Color.Default;
+    private Blazorise.Color getMessageColor(MessageDTO message) => message.SenderId == userId ? Blazorise.Color.Primary : Blazorise.Color.Default;
     private Task ShowModal()
     {
         return userHandleInputRef.Show();
@@ -89,7 +88,7 @@
 
     private async Task Join()
     {
-        await hubConnection.SendAsync(MessageTypes.Join.ToString(), handle);
+        await hubConnection.SendAsync(MessageTypes.Join.ToString(), userHandle);
         await userHandleInputRef.Hide();
     }
 
@@ -100,15 +99,20 @@
         .Build();
 
 
-        hubConnection.On<Message>(MessageTypes.NewMessage.ToString(), async (message) =>
+        hubConnection.On<MessageDTO>(MessageTypes.NewMessage.ToString(), async (message) =>
         {
-            messages.Add(message);
+            var user1Id = message.SenderId > message.ReceiverId ? message.ReceiverId : message.SenderId;
+            var user2Id = message.SenderId > message.ReceiverId ? message.SenderId : message.ReceiverId;
+            var conversation = conversations.Where(c => c.User1Id == user1Id && c.User2Id == user2Id).First();
+            conversation.Messages.Add(message);
+
             await InvokeAsync(StateHasChanged);
         });
 
         hubConnection.On<UserInfo>(MessageTypes.UserInfo.ToString(), async (userInfo) =>
         {
             messages = userInfo.Messages.ToList();
+            userId = userInfo.UserId;
             await InvokeAsync(StateHasChanged);
         });
 
@@ -127,9 +131,11 @@
     {
         if (hubConnection is null) await ShowErrorModal();
 
-        await hubConnection!.SendAsync(MessageTypes.NewMessage.ToString(), new Message
+        await hubConnection!.SendAsync(MessageTypes.NewMessage.ToString(), new MessageDTO
         {
-            Content = messageInput,
+            SenderId = userId,
+            ReceiverHandle = receiverHandle,
+            Text = messageInput,
         });
     }
 

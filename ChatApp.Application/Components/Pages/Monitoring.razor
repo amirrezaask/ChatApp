@@ -1,0 +1,86 @@
+@page "/monitoring"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.SignalR.Client
+@using Blazorise;
+@using ChatApp.Application.Entities;
+@using static ChatApp.Application.Hubs.MonitoringHub.Protocol;
+@inject NavigationManager Navigation;
+@implements IAsyncDisposable
+
+<PageTitle>Monitoring</PageTitle>
+
+
+<h1> Users </h1>
+@if (Users is not null)
+{
+
+    <ListGroup>
+        @foreach (var user in Users)
+        {
+            <ListGroupItem>@user.Handle</ListGroupItem>
+        }
+    </ListGroup>
+
+}
+<hr />
+
+<h1> Conversations </h1>
+@if (Conversations is not null)
+{
+
+    <ListGroup>
+        @foreach (var conversation in Conversations)
+        {
+            <ListGroupItem>@($"{conversation.User1Id} <=> {conversation.User2Id}")</ListGroupItem>
+        }
+    </ListGroup>
+
+}
+
+<h1>Messages</h1>
+@if (Messages is not null)
+{
+
+    <ListGroup>
+        @foreach (var message in Messages)
+        {
+            <ListGroupItem>@($"{message.SenderId} said {message.Text}")</ListGroupItem>
+        }
+    </ListGroup>
+
+}
+
+@code 
+{
+    private HubConnection? hubConnection;
+    private List<User> Users;
+    private List<Conversation> Conversations;
+    private List<Message> Messages;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is null) return;
+        await hubConnection.DisposeAsync();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+        .WithUrl(Navigation.ToAbsoluteUri("/monitoringhub"))
+        .Build();
+
+        hubConnection.On<Overview>(MessageTypes.Overview.ToString(), async (overview) =>
+        {
+            Users = overview.Users;
+            Messages = overview.Messages;
+            Conversations = overview.Conversations;
+
+            await InvokeAsync(StateHasChanged);
+
+        });
+
+
+        await hubConnection.StartAsync();
+        await hubConnection.SendAsync(MessageTypes.Join.ToString());
+    }
+}
